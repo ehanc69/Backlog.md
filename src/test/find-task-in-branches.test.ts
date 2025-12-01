@@ -1,12 +1,13 @@
 import { describe, expect, it } from "bun:test";
 import { findTaskInLocalBranches, findTaskInRemoteBranches } from "../core/task-loader.ts";
+import type { GitOperations } from "../git/operations.ts";
 
 describe("findTaskInRemoteBranches", () => {
 	it("should return null when git has no remotes", async () => {
 		const mockGit = {
 			hasAnyRemote: async () => false,
 		};
-		const result = await findTaskInRemoteBranches(mockGit as any, "task-999");
+		const result = await findTaskInRemoteBranches(mockGit as unknown as GitOperations, "task-999");
 		expect(result).toBeNull();
 	});
 
@@ -15,7 +16,7 @@ describe("findTaskInRemoteBranches", () => {
 			hasAnyRemote: async () => true,
 			listRecentRemoteBranches: async () => [],
 		};
-		const result = await findTaskInRemoteBranches(mockGit as any, "task-999");
+		const result = await findTaskInRemoteBranches(mockGit as unknown as GitOperations, "task-999");
 		expect(result).toBeNull();
 	});
 
@@ -26,7 +27,7 @@ describe("findTaskInRemoteBranches", () => {
 			listFilesInTree: async () => ["backlog/tasks/task-1 - some task.md"],
 			getBranchLastModifiedMap: async () => new Map([["backlog/tasks/task-1 - some task.md", new Date()]]),
 		};
-		const result = await findTaskInRemoteBranches(mockGit as any, "task-999");
+		const result = await findTaskInRemoteBranches(mockGit as unknown as GitOperations, "task-999");
 		expect(result).toBeNull();
 	});
 
@@ -54,7 +55,7 @@ Test description
 			showFile: async () => mockTaskContent,
 		};
 
-		const result = await findTaskInRemoteBranches(mockGit as any, "task-123");
+		const result = await findTaskInRemoteBranches(mockGit as unknown as GitOperations, "task-123");
 		expect(result).not.toBeNull();
 		expect(result?.id).toBe("task-123");
 		expect(result?.source).toBe("remote");
@@ -67,7 +68,7 @@ describe("findTaskInLocalBranches", () => {
 		const mockGit = {
 			getCurrentBranch: async () => null,
 		};
-		const result = await findTaskInLocalBranches(mockGit as any, "task-999");
+		const result = await findTaskInLocalBranches(mockGit as unknown as GitOperations, "task-999");
 		expect(result).toBeNull();
 	});
 
@@ -76,7 +77,7 @@ describe("findTaskInLocalBranches", () => {
 			getCurrentBranch: async () => "main",
 			listRecentBranches: async () => ["main"],
 		};
-		const result = await findTaskInLocalBranches(mockGit as any, "task-999");
+		const result = await findTaskInLocalBranches(mockGit as unknown as GitOperations, "task-999");
 		expect(result).toBeNull();
 	});
 
@@ -104,7 +105,7 @@ From local branch
 			showFile: async () => mockTaskContent,
 		};
 
-		const result = await findTaskInLocalBranches(mockGit as any, "task-456");
+		const result = await findTaskInLocalBranches(mockGit as unknown as GitOperations, "task-456");
 		expect(result).not.toBeNull();
 		expect(result?.id).toBe("task-456");
 		expect(result?.source).toBe("local-branch");
